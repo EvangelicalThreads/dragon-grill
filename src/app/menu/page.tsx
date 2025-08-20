@@ -234,9 +234,9 @@ export default function Menu() {
   {/* CHEF MESSAGE */}
   <div className="flex flex-col items-center my-10 max-w-xl mx-auto text-center px-4">
     <p className="text-gray-700 italic text-sm sm:text-base md:text-lg">
-      <strong>A word from our Chef Joel Lim:</strong> <br />
-      "Our way is the Best way to enjoy Asian Cuisine Without Sacrificing Taste or Your Health!"
-    </p>
+  <strong>A word from our Chef Joel Lim:</strong> <br />
+  &quot;Our way is the Best way to enjoy Asian Cuisine Without Sacrificing Taste or Your Health!&quot;
+</p>
   </div>
 
   {/* MENU BUTTON */}

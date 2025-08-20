@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 
 export default function ContactPage() {
   return (
@@ -22,7 +21,7 @@ export default function ContactPage() {
             Contact Us
           </h1>
           <p className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl lg:text-2xl max-w-xl animate-fadeIn delay-200">
-            Questions, feedback, or just want to say hi? We'd love to hear from you.
+            Questions, feedback, or just want to say hi? We&apos;d love to hear from you.
           </p>
         </div>
         <style jsx>{`
@@ -47,7 +46,7 @@ export default function ContactPage() {
           Get in Touch
         </h2>
         <p className="text-gray-700 text-sm sm:text-base md:text-lg max-w-3xl mx-auto leading-relaxed">
-          Whether you're placing an order, asking about catering, or want to share feedback,
+          Whether you&apos;re placing an order, asking about catering, or want to share feedback,
           our team is ready to help. Reach out via phone or email, or stop by in person!
         </p>
         <div className="mt-10 space-y-4">
