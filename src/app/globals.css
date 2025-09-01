@@ -140,7 +140,7 @@
 }
 
 .watermark::before {
-  content: "Katie Wang — DRAFT — NOT PAID";
+  content: "Katie Wang — DRAFT — NOT DONE";
   position: absolute;
   top: 50%;
   left: 50%;
