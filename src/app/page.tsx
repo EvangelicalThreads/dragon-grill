@@ -165,51 +165,53 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FEATURED DISHES CAROUSEL */}
-      <section className="relative w-full py-16 bg-gray-100 overflow-hidden">
-        <motion.h2
-          className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center mb-8"
-          variants={fadeInUp}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-        >
-          Featured Dishes
-        </motion.h2>
+    {/* FEATURED DISHES CAROUSEL */}
+<section className="relative w-full py-16 bg-gray-100 overflow-hidden">
+  <motion.h2
+    className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center mb-8"
+    variants={fadeInUp}
+    initial="hidden"
+    whileInView="visible"
+    viewport={{ once: true }}
+  >
+    Featured Dishes
+  </motion.h2>
 
-        <motion.div
-          className="relative w-full max-w-6xl mx-auto flex gap-4 sm:gap-6 md:gap-8 whitespace-nowrap"
-          animate={{ x: ["0%", "-50%"] }}
-          transition={{
-            x: {
-              repeat: Infinity,
-              repeatType: "loop",
-              duration: 20,
-              ease: "linear",
-            },
-          }}
-        >
-          {carouselItems.map((dish, idx) => (
-            <motion.div
-              key={idx}
-              className="flex-shrink-0 w-60 sm:w-64 md:w-72 flex flex-col items-center p-4 sm:p-6 rounded-3xl shadow-xl hover:scale-105 hover:shadow-2xl transition-all"
-            >
-              <Image
-                src={dish.img}
-                alt={dish.name}
-                width={200}
-                height={200}
-                className="rounded-2xl"
-                loading="lazy"
-              />
-              <h3 className="mt-3 sm:mt-4 text-lg sm:text-xl md:text-xl font-semibold text-center">
-                {dish.name}
-              </h3>
-              <p className="mt-1 sm:mt-2 text-gray-600 text-center text-sm sm:text-base"></p>
-            </motion.div>
-          ))}
-        </motion.div>
-      </section>
+  <motion.div
+    className="relative w-full max-w-6xl mx-auto flex gap-4 sm:gap-6 md:gap-8 whitespace-nowrap"
+    animate={{ x: ["0%", "-100%"] }} // move left continuously
+    transition={{
+      x: {
+        repeat: Infinity,
+        repeatType: "loop",
+        duration: 10, // make this smaller to go faster
+        ease: "linear",
+      },
+    }}
+  >
+    {carouselItems.concat(carouselItems).map((dish, idx) => (
+      <motion.div
+        key={idx}
+        className="flex-shrink-0 w-60 sm:w-64 md:w-72 flex flex-col items-center p-4 sm:p-6 rounded-3xl shadow-xl hover:scale-105 hover:shadow-2xl transition-all"
+      >
+        <Image
+          src={dish.img}
+          alt={dish.name}
+          width={200}
+          height={200}
+          className="rounded-2xl"
+          loading="lazy"
+        />
+        <h3 className="mt-3 sm:mt-4 text-lg sm:text-xl md:text-xl font-semibold text-center">
+          {dish.name}
+        </h3>
+        <p className="mt-1 sm:mt-2 text-gray-600 text-center text-sm sm:text-base">
+        </p>
+      </motion.div>
+    ))}
+  </motion.div>
+</section>
+
 
       {/* CTA */}
       <section className="relative w-full pt-32 pb-20 bg-gradient-to-b from-red-600 to-orange-400 flex flex-col items-center justify-center text-white text-center">
