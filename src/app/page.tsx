@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, Variants, useAnimation } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -188,7 +188,8 @@ function Testimonials() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <p className="text-gray-700 text-lg mb-4">"{r.review}"</p>
+            {/* Use &quot; to escape quotes */}
+            <p className="text-gray-700 text-lg mb-4">&quot;{r.review}&quot;</p>
             <h4 className="font-bold text-red-600">{r.name}</h4>
             <div className="absolute bottom-2 right-2 w-10 h-10 opacity-20">
               <Image src="/dragon-grill-logo.png" alt="Logo" fill className="object-contain" />
