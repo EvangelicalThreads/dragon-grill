@@ -6,7 +6,8 @@ import Image from "next/image";
 import { motion, Variants } from "framer-motion";
 
 // ================== VARIANTS ==================
-export const fadeInUp: Variants = {
+// ✅ Correct
+const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: (i = 0) => ({
     opacity: 1,
@@ -15,12 +16,13 @@ export const fadeInUp: Variants = {
   }),
 };
 
-export const floatY: Variants = {
+const floatY: Variants = {
   animate: {
     y: [0, -10, 0],
     transition: { duration: 6, ease: "easeInOut", repeat: Infinity },
   },
 };
+
 
 const fadeVariants = {
   hidden: { opacity: 0, y: 30 },
