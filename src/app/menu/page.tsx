@@ -3,7 +3,29 @@
 import { Card } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
+
+// ================== VARIANTS ==================
+export const fadeInUp: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.2, duration: 0.8 },
+  }),
+};
+
+export const floatY: Variants = {
+  animate: {
+    y: [0, -10, 0],
+    transition: { duration: 6, ease: "easeInOut", repeat: Infinity },
+  },
+};
+
+const fadeVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0 },
+};
 
 interface MenuItem {
   name: string;
@@ -11,11 +33,6 @@ interface MenuItem {
   description?: string;
   image?: string;
 }
-
-const fadeVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0 },
-};
 
 export default function Menu() {
   const [isVisible, setIsVisible] = useState(false);
@@ -60,7 +77,6 @@ export default function Menu() {
     { name: "Rice (White or Brown)", price: "$3.25" },
     { name: "Chicken", price: "$4.95" },
     { name: "Chicken White Meat", price: "$6.95" },
-
     { name: "Steak", price: "$6.95" },
     { name: "Steak & Chicken", price: "$6.95" },
     { name: "Shrimp (8 pcs)", price: "$6.00" },
@@ -117,9 +133,9 @@ export default function Menu() {
     { name: "Strawberry", price: "$4.95" },
   ];
 
-  // --- RENDER HELPERS ---
+  // --- HELPER FUNCTIONS ---
   const renderSection = (title: string, items: MenuItem[]) => (
-    <section className="my-12 bg-gradient-to-r from-yellow-50 via-white to-yellow-50 p-6 rounded-3xl shadow-inner">
+    <section className="my-12 bg-gradient-to-r from-gray-50 via-white to-gray-50 p-6 rounded-3xl shadow-inner">
       <h2 className="text-3xl font-bold border-b-2 pb-2 mb-6">{title}</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {items.map((item, idx) => (
@@ -151,7 +167,7 @@ export default function Menu() {
   );
 
   const renderSaladPlateBox = () => (
-    <section className="my-12 bg-gradient-to-r from-yellow-50 via-white to-yellow-50 p-6 rounded-3xl shadow-inner">
+    <section className="my-12 bg-gradient-to-r from-gray-50 via-white to-gray-50 p-6 rounded-3xl shadow-inner">
       <h2 className="text-3xl font-bold border-b-2 pb-2 mb-6">Salad Plate</h2>
       <Card className="p-6 bg-white shadow-xl rounded-2xl relative">
         <div className="relative w-full h-64 mb-6 max-w-full">
@@ -163,7 +179,7 @@ export default function Menu() {
         <ul className="list-disc list-inside space-y-2 text-lg font-semibold">
           {saladPlateOptions.map((item, idx) => (
             <li key={idx}>
-              {idx + 9}. {item.name} — {item.price}
+              {idx + 1}. {item.name} — {item.price}
             </li>
           ))}
         </ul>
@@ -175,7 +191,7 @@ export default function Menu() {
   );
 
   const renderDrinkBox = (title: string, items: MenuItem[], image: string) => (
-    <section className="my-12 bg-gradient-to-r from-yellow-50 via-white to-yellow-50 p-6 rounded-3xl shadow-inner">
+    <section className="my-12 bg-gradient-to-r from-gray-50 via-white to-gray-50 p-6 rounded-3xl shadow-inner">
       <h2 className="text-3xl font-bold border-b-2 pb-2 mb-6">{title}</h2>
       <Card className="p-6 bg-white shadow-xl rounded-2xl relative">
         <div className="relative w-full h-64 mb-6 max-w-full">
@@ -197,82 +213,77 @@ export default function Menu() {
 
   const renderAddBanner = () => (
     <motion.div
-      initial={{ opacity: 0, y: -20 }}
+      initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1, repeat: Infinity, repeatType: "mirror" }}
-      className="bg-yellow-100 text-yellow-900 font-bold text-center py-3 px-6 rounded-lg mb-12 shadow-lg text-xl"
+      transition={{ duration: 0.8 }}
+      className="bg-gray-100 text-gray-900 font-semibold text-center py-3 px-6 rounded-2xl mb-12 shadow-md text-lg sm:text-xl max-w-xl mx-auto"
     >
-      Add to Any Bowl or Plate : Veggies for $1.00 - Avocado for $1.50!
+      Add to Any Bowl or Plate: <span className="text-red-600 font-bold">Veggies $1.00</span> — <span className="text-red-600 font-bold">Avocado $1.50</span>
     </motion.div>
   );
 
+  // --- RETURN JSX ---
   return (
+    <>
+      {/* HERO */}
+      <motion.section
+        className="relative w-full h-screen flex flex-col items-center justify-center text-white text-center overflow-hidden px-4 bg-gray-900"
+        initial="hidden"
+        animate="visible"
+      >
+        <div className="absolute inset-0 bg-black/40 -z-10"></div>
 
-<main className="relative w-full overflow-x-hidden font-sans">
-  {/* HERO */}
-  <section className="relative w-full h-96 bg-gradient-to-b from-red-600 via-red-500 to-orange-300 flex flex-col items-center justify-center text-white text-center overflow-hidden px-4">
-    <div className="relative z-10 flex flex-col items-center">
-      <div className="bg-white rounded-full p-4 shadow-xl">
-        <Image
-          src="/dragon-grill-logo.png"
-          alt="Dragon Grill Logo"
-          width={150}
-          height={150}
-          className="animate-float"
-      />
-    </div>
-    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mt-6 animate-fadeIn">
-      Menu
-    </h1>
-    <p className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl lg:text-2xl max-w-xl animate-fadeIn delay-200">
-      Explore our delicious options, from Party Trays to daily specials.
-    </p>
-  </div>
-</section>
+        <motion.div className="relative z-10 flex flex-col items-center">
+          <motion.div
+            className="bg-white rounded-full p-4 shadow-xl mb-6"
+            variants={floatY}
+            animate="animate"
+          >
+            <Image src="/dragon-grill-logo.png" alt="Dragon Grill Logo" width={220} height={220} priority />
+          </motion.div>
 
+          <motion.h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mt-6"
+            variants={fadeInUp}
+            custom={0}
+            initial="hidden"
+            animate="visible"
+          >
+            Menu
+          </motion.h1>
 
-  {/* CHEF MESSAGE */}
-  <div className="flex flex-col items-center my-10 max-w-xl mx-auto text-center px-4">
-    <p className="text-gray-700 italic text-sm sm:text-base md:text-lg">
-  <strong>A word from our Chef Joel Lim:</strong> <br />
-  &quot;Our way is the Best way to enjoy Asian Cuisine Without Sacrificing Taste or Your Health!&quot;
-</p>
-  </div>
+          <motion.p className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl lg:text-2xl max-w-xl text-gray-200"
+            variants={fadeInUp}
+            custom={0.2}
+            initial="hidden"
+            animate="visible"
+          >
+            Explore our delicious options, from Party Trays to daily specials.
+          </motion.p>
 
-  {/* MENU BUTTON */}
-  <div className="text-center my-8">
-    <a
-      href="/menu.pdf"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-lg shadow-lg text-base sm:text-lg md:text-xl transition-colors duration-300 inline-block"
-    >
-      Download Full Menu (PDF)
-    </a>
-  </div>
+          <motion.a href="/menu.pdf" target="_blank" rel="noopener noreferrer"
+            className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-lg shadow-lg text-base sm:text-lg md:text-xl transition-colors duration-300 inline-block mt-8"
+            variants={fadeInUp}
+            custom={0.4}
+            initial="hidden"
+            animate="visible"
+          >
+            Download Full Menu (PDF)
+          </motion.a>
+        </motion.div>
+      </motion.section>
 
-  {/* OPTIONAL BANNER */}
-  <div className="w-full mt-6 px-4">
-    {renderAddBanner()}
-  </div>
+      {/* CHEF MESSAGE */}
+      <div className="flex flex-col items-center my-10 max-w-xl mx-auto text-center px-4">
+        <p className="text-gray-700 italic text-sm sm:text-base md:text-lg">
+          <strong>A word from our Chef Joel Lim:</strong> <br />
+          &quot;Our way is the Best way to enjoy Asian Cuisine Without Sacrificing Taste or Your Health!&quot;
+        </p>
+      </div>
 
-  <style jsx>{`
-    @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0px); }
-    }
-    .animate-float { animation: float 6s ease-in-out infinite; }
+      {/* ADD BANNER */}
+      {renderAddBanner()}
 
-    @keyframes fadeIn {
-      0% { opacity: 0; transform: translateY(20px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-    .animate-fadeIn { animation: fadeIn 1s forwards; }
-  `}</style>
-
-
-
+      {/* MENU SECTIONS */}
       {renderSection("Bowls", bowls)}
       {renderSection("Plates", plates)}
       {renderSaladPlateBox()}
@@ -282,55 +293,42 @@ export default function Menu() {
       {renderSection("Bottle Drinks", bottleDrinks)}
       {renderSection("Sides", sides)}
 
-      <section className="my-12 p-6 rounded-3xl bg-gradient-to-r from-yellow-50 via-white to-yellow-50 shadow-inner relative">
-  <h2 className="text-3xl font-extrabold text-center mb-8 border-b-2 pb-3 border-yellow-300">
-    Party Trays
-  </h2>
+      {/* PARTY TRAYS */}
+      <section className="my-12 p-6 rounded-3xl bg-gray-50 shadow-inner relative">
+        <h2 className="text-3xl font-extrabold text-center mb-8 border-b-2 pb-3 border-gray-300">
+          Party Trays
+        </h2>
 
-  <Card className="p-8 bg-white shadow-xl rounded-2xl flex flex-col items-center text-center space-y-6 relative">
-    <div>
-      <p className="text-lg italic text-gray-600 mb-4">
-        Please ask for more details about our Party Trays!
-      </p>
-      <ul className="list-disc list-inside text-gray-700 space-y-1 font-medium">
-        <li>Chicken</li>
-        <li>Chicken White Meat</li>
-        <li>Steak</li>
-        <li>Steak and Chicken</li>
-        <li>Shrimp (60 pcs.)</li>
-        <li>Steamed Veggies</li>
-        <li>Salad</li>
-        <li>White Rice</li>
-        <li>Brown Rice</li>
-      </ul>
-    </div>
+        <Card className="p-8 bg-white shadow-xl rounded-2xl flex flex-col items-center text-center space-y-6 relative">
+          <div>
+            <p className="text-lg italic text-gray-600 mb-4">
+              Please ask for more details about our Party Trays!
+            </p>
+            <ul className="list-disc list-inside text-gray-700 space-y-1 font-medium">
+              {partyTrays.map((item, idx) => <li key={idx}>{item.name}</li>)}
+            </ul>
+          </div>
 
-    <div className="space-y-2">
-      <p className="text-gray-700 font-medium">
-        📞 <span className="font-bold text-yellow-700">Phone Orders:</span> 909-740-0740
-      </p>
-      <p className="text-gray-700 font-medium">
-        💻 Online Orders: DoorDash / Uber Eats / Grubhub
-      </p>
-    </div>
+          <div className="space-y-2">
+            <p className="text-gray-700 font-medium">
+              📞 <span className="font-bold text-red-600">Phone Orders:</span> 909-740-0740
+            </p>
+            <p className="text-gray-700 font-medium">
+              💻 Online Orders: DoorDash / Uber Eats / Grubhub
+            </p>
+          </div>
 
-    <a
-      href="tel:9097400740"
-      className="mt-4 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-8 rounded-xl shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-    >
-      Call to Order
-    </a>
+          <a href="tel:9097400740"
+            className="mt-4 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded-xl shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+          >
+            Call to Order
+          </a>
 
-   <div className="absolute bottom-2 right-2 w-14 h-14 opacity-20">
-  <Image
-    src="/dragon-grill-logo.png"
-    alt="Logo"
-    fill
-    className="object-contain"
-  />
-</div>
-  </Card>
-</section>
-</main>
+          <div className="absolute bottom-2 right-2 w-14 h-14 opacity-20">
+            <Image src="/dragon-grill-logo.png" alt="Logo" fill className="object-contain" />
+          </div>
+        </Card>
+      </section>
+    </>
   );
 }
