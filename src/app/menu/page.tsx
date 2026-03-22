@@ -1,18 +1,18 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { useEffect, useState } from "react";
 import Image from "next/image";
-import { motion, Variants } from "framer-motion";
+import Link from "next/link";
+import { motion, Variants, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 
 // ================== VARIANTS ==================
-// ✅ Correct
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: (i = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.2, duration: 0.8 },
+    transition: { delay: i * 0.12, duration: 0.7, ease: "easeOut" },
   }),
 };
 
@@ -23,10 +23,32 @@ const floatY: Variants = {
   },
 };
 
-
-const fadeVariants = {
+const fadeVariants: Variants = {
   hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.55,
+      ease: "easeOut" as const,
+    },
+  },
+};
+
+const popIn: Variants = {
+  hidden: { opacity: 0, scale: 0.97, y: 8 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { duration: 0.22, ease: "easeOut" },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.97,
+    y: 8,
+    transition: { duration: 0.18, ease: "easeIn" },
+  },
 };
 
 interface MenuItem {
@@ -36,32 +58,481 @@ interface MenuItem {
   image?: string;
 }
 
-export default function Menu() {
-  const [isVisible, setIsVisible] = useState(false);
+// ================== ORDER LINKS ==================
+const deliveryLinks = [
+  {
+    name: "Grubhub",
+    href: "https://www.grubhub.com/",
+    subtext: "Order through Grubhub",
+  },
+  {
+    name: "DoorDash",
+    href: "https://www.doordash.com/",
+    subtext: "Order through DoorDash",
+  },
+  {
+    name: "Uber Eats",
+    href: "https://www.ubereats.com/",
+    subtext: "Order through Uber Eats",
+  },
+];
 
+// ================== ORDER MODAL ==================
+function OrderModal({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) {
   useEffect(() => {
-    const onScroll = () => setIsVisible(true);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    if (!isOpen) return;
+
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+
+    document.addEventListener("keydown", handleEsc);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", handleEsc);
+      document.body.style.overflow = "auto";
+    };
+  }, [isOpen, onClose]);
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+
+          <div className="fixed inset-0 z-[101] flex items-center justify-center px-4">
+            <motion.div
+              className="w-full max-w-md overflow-hidden rounded-3xl border border-red-100 bg-white shadow-2xl"
+              variants={popIn}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              <div className="bg-gradient-to-r from-red-600 to-orange-500 px-6 py-5 text-white">
+                <h3 className="text-2xl font-extrabold">Order Now</h3>
+                <p className="mt-1 text-sm text-white/90">
+                  Pick your delivery platform.
+                </p>
+              </div>
+
+              <div className="space-y-3 p-5">
+                {deliveryLinks.map((platform) => (
+                  <a
+                    key={platform.name}
+                    href={platform.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block rounded-2xl border border-gray-200 bg-white p-4 transition-all hover:-translate-y-0.5 hover:border-red-300 hover:shadow-md"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-lg font-bold text-gray-900">{platform.name}</p>
+                        <p className="text-sm text-gray-600">{platform.subtext}</p>
+                      </div>
+                      <span className="font-bold text-red-600">→</span>
+                    </div>
+                  </a>
+                ))}
+              </div>
+
+              <div className="px-5 pb-5">
+                <button
+                  onClick={onClose}
+                  className="w-full rounded-2xl bg-gray-100 py-3 font-semibold text-gray-800 transition hover:bg-gray-200"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// ================== SECTION HEADER ==================
+function SectionHeader({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow?: string;
+  title: string;
+  description?: string;
+}) {
+  return (
+    <div className="mb-8 text-center">
+      {eyebrow && (
+        <p className="mb-3 text-sm font-bold uppercase tracking-[0.25em] text-red-600">
+          {eyebrow}
+        </p>
+      )}
+      <h2 className="text-3xl font-black text-gray-900 sm:text-4xl">{title}</h2>
+      {description && (
+        <p className="mx-auto mt-3 max-w-2xl text-gray-600 sm:text-lg">{description}</p>
+      )}
+    </div>
+  );
+}
+
+// ================== MAIN FOOD CARD GRID ==================
+function FoodSection({
+  title,
+  items,
+}: {
+  title: string;
+  items: MenuItem[];
+}) {
+  return (
+    <section className="my-16">
+      <SectionHeader title={title} />
+
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        {items.map((item, idx) => (
+          <motion.div
+            key={item.name}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            custom={idx}
+            variants={fadeVariants}
+          >
+            <Card className="group h-full overflow-hidden rounded-[28px] border border-red-100 bg-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+              {item.image && (
+                <div className="relative h-56 w-full overflow-hidden bg-gradient-to-b from-[#fff8f5] to-white">
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    className="object-contain p-4 transition duration-500 group-hover:scale-105"
+                  />
+                </div>
+              )}
+
+              <div className="p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <h3 className="text-xl font-extrabold text-gray-900">{item.name}</h3>
+                  {item.price && (
+                    <span className="whitespace-nowrap rounded-full bg-red-50 px-3 py-1 text-sm font-bold text-red-600">
+                      {item.price}
+                    </span>
+                  )}
+                </div>
+
+                {item.description && (
+                  <p className="mt-3 text-sm leading-relaxed text-gray-600">
+                    {item.description}
+                  </p>
+                )}
+              </div>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ================== FEATURED SALAD PLATE ==================
+function SaladPlateSection({
+  options,
+}: {
+  options: { name: string; price: string }[];
+}) {
+  return (
+    <section className="my-16">
+      <SectionHeader
+        eyebrow="Featured"
+        title="Salad Plate"
+        description="Fresh, crisp, and stacked with toppings that actually make a salad worth ordering for once."
+      />
+
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeVariants}
+      >
+        <Card className="overflow-hidden rounded-[32px] border border-red-100 bg-white shadow-xl">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]">
+            <div className="relative min-h-[320px] bg-gradient-to-b from-[#fff8f5] to-white">
+              <Image
+                src="/salad-plate.png"
+                alt="Salad Plate"
+                fill
+                className="object-contain p-6"
+              />
+            </div>
+
+            <div className="p-6 sm:p-8">
+              <h3 className="text-2xl font-black text-gray-900">Build Your Salad Plate</h3>
+
+              <p className="mt-4 text-gray-700">
+                Includes: Iceberg Lettuce, Cherry Tomatoes, Cucumber, Carrots,
+                Red Cabbage, Egg, Avocado, and Crispy Noodles.
+              </p>
+
+              <div className="mt-6 space-y-3">
+                {options.map((item, idx) => (
+                  <div
+                    key={item.name}
+                    className="flex items-center justify-between rounded-2xl border border-gray-200 bg-[#fffaf8] px-4 py-3"
+                  >
+                    <span className="font-medium text-gray-900">
+                      {idx + 1}. {item.name}
+                    </span>
+                    <span className="font-bold text-red-600">{item.price}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+    </section>
+  );
+}
+
+// ================== COMPACT MENU LIST ==================
+function CompactMenuSection({
+  title,
+  items,
+  columns = 2,
+}: {
+  title: string;
+  items: MenuItem[];
+  columns?: 1 | 2;
+}) {
+  return (
+    <section className="my-14">
+      <SectionHeader title={title} />
+
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeVariants}
+      >
+        <Card className="rounded-[28px] border border-gray-200 bg-white shadow-lg">
+          <div
+            className={`grid gap-x-8 gap-y-1 p-5 sm:p-6 ${
+              columns === 2 ? "md:grid-cols-2" : "grid-cols-1"
+            }`}
+          >
+            {items.map((item) => (
+              <div
+                key={`${title}-${item.name}`}
+                className="flex items-center justify-between gap-4 border-b border-gray-100 py-4 last:border-b-0"
+              >
+                <div>
+                  <p className="font-semibold text-gray-900">{item.name}</p>
+                  {item.description && (
+                    <p className="mt-1 text-sm text-gray-600">{item.description}</p>
+                  )}
+                </div>
+
+                {item.price && (
+                  <span className="whitespace-nowrap font-bold text-red-600">
+                    {item.price}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </Card>
+      </motion.div>
+    </section>
+  );
+}
+
+// ================== PARTY TRAYS ==================
+function PartyTraySection({
+  items,
+  onOpenOrder,
+}: {
+  items: MenuItem[];
+  onOpenOrder: () => void;
+}) {
+  return (
+    <section className="my-16">
+      <SectionHeader
+        eyebrow="Catering / Large Orders"
+        title="Party Trays"
+        description="Perfect for family meals, events, team lunches, or feeding people who suddenly appear when food is involved."
+      />
+
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeVariants}
+      >
+        <Card className="overflow-hidden rounded-[32px] bg-white shadow-xl">
+          <div className="grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr]">
+            <div className="bg-gradient-to-br from-gray-950 via-gray-900 to-red-950 p-8 text-white">
+              <p className="text-sm font-bold uppercase tracking-[0.25em] text-orange-300">
+                Large Orders
+              </p>
+              <h3 className="mt-3 text-3xl font-black">Feed the whole crew</h3>
+              <p className="mt-4 max-w-md text-white/80">
+                Call to order party trays for gatherings, work lunches, celebrations,
+                or whatever deeply unnecessary event your group chat invented.
+              </p>
+
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <button
+                  onClick={onOpenOrder}
+                  className="rounded-2xl bg-white px-6 py-3 font-bold text-gray-950 transition hover:scale-[1.02]"
+                >
+                  Order Now
+                </button>
+
+                <a
+                  href="tel:9517341188"
+                  className="rounded-2xl border border-white/30 bg-white/10 px-6 py-3 font-bold text-white backdrop-blur transition hover:bg-white/20"
+                >
+                  Call to Order
+                </a>
+              </div>
+            </div>
+
+            <div className="p-6 sm:p-8">
+              <div className="grid gap-3 sm:grid-cols-2">
+                {items.map((item) => (
+                  <div
+                    key={item.name}
+                    className="rounded-2xl border border-gray-200 bg-[#fffaf8] px-4 py-3 font-semibold text-gray-900"
+                  >
+                    {item.name}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+    </section>
+  );
+}
+// ================== ADD-ON BANNER ==================
+function AddBanner() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6 }}
+      className="mx-auto mt-12 max-w-3xl rounded-[24px] border border-red-100 bg-[#fff8f5] px-6 py-4 text-center shadow-md"
+    >
+      <span className="text-sm font-bold uppercase tracking-[0.2em] text-gray-500">
+        Add-ons
+      </span>
+      <p className="mt-2 text-lg font-semibold text-gray-900 sm:text-xl">
+        Add to any bowl or plate:
+        <span className="mx-2 text-red-600 font-bold">Veggies $1.00</span>
+        <span className="text-gray-400">•</span>
+        <span className="mx-2 text-red-600 font-bold">Avocado $1.50</span>
+      </p>
+    </motion.div>
+  );
+}
+
+
+// ================== MENU PAGE ==================
+export default function Menu() {
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
 
   // --- MENU DATA ---
   const bowls: MenuItem[] = [
-    { name: "Veggie Bowl", price: "$6.95", description: "Rice - White or Brown, Carrots, Broccoli, Cabbage, Green Onion", image: "/1-veggie-bowl.png" },
-    { name: "Tofu Bowl", price: "$7.95", description: "Tofu and Rice - White or Brown", image: "/2-tofu-bowl.png" },
-    { name: "Chicken Bowl", price: "$9.95", description: "Chicken and Rice - White or Brown (White Meat Add $1.00)", image: "/3-chicken-bowl.png" },
-    { name: "Steak Bowl", price: "$10.95", description: "Steak and Rice - White or Brown", image: "/4-steak-bowl.png" },
-    { name: "Steak & Chicken Bowl", price: "$10.95", description: "Steak & Chicken and Rice - White or Brown (White Meat Add $1.00)", image: "/5-steak-chicken-bowl.png" },
-    { name: "Shrimp Bowl", price: "$11.95", description: "Shrimp and Rice - White or Brown", image: "/6-shrimp-bowl.png" },
-    { name: "Salmon Bowl", price: "$12.95", description: "Salmon and Rice - White or Brown", image: "/7-salmon-bowl.png" },
+    {
+      name: "Veggie Bowl",
+      price: "$6.95",
+      description: "Rice - White or Brown, Carrots, Broccoli, Cabbage, Green Onion",
+      image: "/1-veggie-bowl.png",
+    },
+    {
+      name: "Tofu Bowl",
+      price: "$7.95",
+      description: "Tofu and Rice - White or Brown",
+      image: "/2-tofu-bowl.png",
+    },
+    {
+      name: "Chicken Bowl",
+      price: "$9.95",
+      description: "Chicken and Rice - White or Brown (White Meat Add $1.00)",
+      image: "/3-chicken-bowl.png",
+    },
+    {
+      name: "Steak Bowl",
+      price: "$10.95",
+      description: "Steak and Rice - White or Brown",
+      image: "/4-steak-bowl.png",
+    },
+    {
+      name: "Steak & Chicken Bowl",
+      price: "$10.95",
+      description: "Steak & Chicken and Rice - White or Brown (White Meat Add $1.00)",
+      image: "/5-steak-chicken-bowl.png",
+    },
+    {
+      name: "Shrimp Bowl",
+      price: "$11.95",
+      description: "Shrimp and Rice - White or Brown",
+      image: "/6-shrimp-bowl.png",
+    },
+    {
+      name: "Salmon Bowl",
+      price: "$12.95",
+      description: "Salmon and Rice - White or Brown",
+      image: "/7-salmon-bowl.png",
+    },
   ];
 
   const plates: MenuItem[] = [
-    { name: "Chicken Plate", price: "$11.95", description: "Chicken and Rice - White or Brown (White Meat Add $1.00)", image: "/3B-chicken-plate.png" },
-    { name: "Steak Plate", price: "$12.95", description: "Steak and Rice - White or Brown, Salad and Orange", image: "/4B-steak-plate.png" },
-    { name: "Steak & Chicken Plate", price: "$12.95", description: "Steak & Chicken and Rice - White or Brown, Salad and Orange (White Meat Add $1.00)", image: "/5B-steak-chicken-plate.png" },
-    { name: "Shrimp Plate", price: "$14.95", description: "Shrimp and Rice - White or Brown, Salad and Orange", image: "/6B-shrimp-plate.png" },
-    { name: "Salmon Plate", price: "$16.95", description: "Salmon and Rice - White or Brown, Salad and Orange", image: "/7B-salmon-plate.png" },
+    {
+      name: "Chicken Plate",
+      price: "$11.95",
+      description: "Chicken and Rice - White or Brown (White Meat Add $1.00)",
+      image: "/3B-chicken-plate.png",
+    },
+    {
+      name: "Steak Plate",
+      price: "$12.95",
+      description: "Steak and Rice - White or Brown, Salad and Orange",
+      image: "/4B-steak-plate.png",
+    },
+    {
+      name: "Steak & Chicken Plate",
+      price: "$12.95",
+      description: "Steak & Chicken and Rice - White or Brown, Salad and Orange (White Meat Add $1.00)",
+      image: "/5B-steak-chicken-plate.png",
+    },
+    {
+      name: "Shrimp Plate",
+      price: "$14.95",
+      description: "Shrimp and Rice - White or Brown, Salad and Orange",
+      image: "/6B-shrimp-plate.png",
+    },
+    {
+      name: "Salmon Plate",
+      price: "$16.95",
+      description: "Salmon and Rice - White or Brown, Salad and Orange",
+      image: "/7B-salmon-plate.png",
+    },
   ];
 
   const saladPlateOptions = [
@@ -135,99 +606,9 @@ export default function Menu() {
     { name: "Strawberry", price: "$4.95" },
   ];
 
-  // --- HELPER FUNCTIONS ---
-  const renderSection = (title: string, items: MenuItem[]) => (
-    <section className="my-12 bg-gradient-to-r from-gray-50 via-white to-gray-50 p-6 rounded-3xl shadow-inner">
-      <h2 className="text-3xl font-bold border-b-2 pb-2 mb-6">{title}</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {items.map((item, idx) => (
-          <motion.div
-            key={idx}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: idx * 0.1 }}
-            variants={fadeVariants}
-          >
-            <Card className="p-4 flex flex-col items-center bg-white shadow-xl rounded-2xl h-full hover:scale-105 transition-transform duration-300 relative">
-              {item.image && (
-                <div className="relative w-full h-48 mb-4 max-w-full">
-                  <Image src={item.image} alt={item.name} fill className="object-contain" />
-                </div>
-              )}
-              <h3 className="text-xl font-semibold mb-1 text-center border-b-2 pb-1 w-full">{item.name}</h3>
-              {item.description && <p className="text-sm text-center mb-2">{item.description}</p>}
-              {item.price && <p className="font-bold text-center text-lg">{item.price}</p>}
-              <div className="absolute bottom-2 right-2 w-10 h-10 opacity-20">
-                <Image src="/dragon-grill-logo.png" alt="Logo" fill className="object-contain" />
-              </div>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
-    </section>
-  );
-
-  const renderSaladPlateBox = () => (
-    <section className="my-12 bg-gradient-to-r from-gray-50 via-white to-gray-50 p-6 rounded-3xl shadow-inner">
-      <h2 className="text-3xl font-bold border-b-2 pb-2 mb-6">Salad Plate</h2>
-      <Card className="p-6 bg-white shadow-xl rounded-2xl relative">
-        <div className="relative w-full h-64 mb-6 max-w-full">
-          <Image src="/salad-plate.png" alt="Salad Plate" fill className="object-contain" />
-        </div>
-        <p className="mb-4">
-          Includes: Iceberg Lettuce, Cherry Tomatoes, Cucumber, Carrots, Red Cabbage, Egg, Avocado, Crispy Noodles
-        </p>
-        <ul className="list-disc list-inside space-y-2 text-lg font-semibold">
-          {saladPlateOptions.map((item, idx) => (
-            <li key={idx}>
-              {idx + 1}. {item.name} — {item.price}
-            </li>
-          ))}
-        </ul>
-        <div className="absolute bottom-2 right-2 w-10 h-10 opacity-20">
-          <Image src="/dragon-grill-logo.png" alt="Logo" fill className="object-contain" />
-        </div>
-      </Card>
-    </section>
-  );
-
-  const renderDrinkBox = (title: string, items: MenuItem[], image: string) => (
-    <section className="my-12 bg-gradient-to-r from-gray-50 via-white to-gray-50 p-6 rounded-3xl shadow-inner">
-      <h2 className="text-3xl font-bold border-b-2 pb-2 mb-6">{title}</h2>
-      <Card className="p-6 bg-white shadow-xl rounded-2xl relative">
-        <div className="relative w-full h-64 mb-6 max-w-full">
-          <Image src={image} alt={title} fill className="object-contain" />
-        </div>
-        <ul className="list-disc list-inside space-y-2 text-lg font-semibold">
-          {items.map((item, idx) => (
-            <li key={idx}>
-              {item.name} — {item.price}
-            </li>
-          ))}
-        </ul>
-        <div className="absolute bottom-2 right-2 w-10 h-10 opacity-20">
-          <Image src="/dragon-grill-logo.png" alt="Logo" fill className="object-contain" />
-        </div>
-      </Card>
-    </section>
-  );
-
-  const renderAddBanner = () => (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8 }}
-      className="bg-gray-100 text-gray-900 font-semibold text-center py-3 px-6 rounded-2xl mb-12 shadow-md text-lg sm:text-xl max-w-xl mx-auto"
-    >
-      Add to Any Bowl or Plate: <span className="text-red-600 font-bold">Veggies $1.00</span> — <span className="text-red-600 font-bold">Avocado $1.50</span>
-    </motion.div>
-  );
-
-  // --- RETURN JSX ---
   return (
     <>
-      {/* HERO */}
+      {/* HERO - LEFT ALONE */}
       <motion.section
         className="relative w-full h-screen flex flex-col items-center justify-center text-white text-center overflow-hidden px-4 bg-gray-900"
         initial="hidden"
@@ -241,10 +622,17 @@ export default function Menu() {
             variants={floatY}
             animate="animate"
           >
-            <Image src="/dragon-grill-logo.png" alt="Dragon Grill Logo" width={220} height={220} priority />
+            <Image
+              src="/dragon-grill-logo.png"
+              alt="Dragon Grill Logo"
+              width={220}
+              height={220}
+              priority
+            />
           </motion.div>
 
-          <motion.h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mt-6"
+          <motion.h1
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mt-6"
             variants={fadeInUp}
             custom={0}
             initial="hidden"
@@ -253,84 +641,74 @@ export default function Menu() {
             Menu
           </motion.h1>
 
-          <motion.p className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl lg:text-2xl max-w-xl text-gray-200"
+          <motion.p
+            className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl lg:text-2xl max-w-xl text-gray-200"
             variants={fadeInUp}
             custom={0.2}
             initial="hidden"
             animate="visible"
           >
-            Explore our delicious options, from Party Trays to daily specials.
+            Fresh ingredients, bold flavor, and comfort food worth coming back for.
           </motion.p>
 
-          <motion.a href="/menu.pdf" target="_blank" rel="noopener noreferrer"
-            className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-lg shadow-lg text-base sm:text-lg md:text-xl transition-colors duration-300 inline-block mt-8"
+          <motion.div
+            className="mt-8 flex flex-col gap-3 sm:flex-row"
             variants={fadeInUp}
-            custom={0.4}
+            custom={0.35}
             initial="hidden"
             animate="visible"
           >
-            Download Full Menu (PDF)
-          </motion.a>
+            <a
+              href="/menu.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-2xl bg-white px-7 py-3.5 font-bold text-gray-900 shadow-xl transition hover:scale-[1.02]"
+            >
+              View Full PDF Menu
+            </a>
+
+            <button
+              onClick={() => setOrderModalOpen(true)}
+              className="rounded-2xl border border-white/30 bg-white/10 px-7 py-3.5 font-bold text-white backdrop-blur transition hover:scale-[1.02] hover:bg-white/20"
+            >
+              Order Now
+            </button>
+          </motion.div>
         </motion.div>
       </motion.section>
 
-      {/* CHEF MESSAGE */}
-      <div className="flex flex-col items-center my-10 max-w-xl mx-auto text-center px-4">
-        <p className="text-gray-700 italic text-sm sm:text-base md:text-lg">
-          <strong>A word from our Chef Joel Lim:</strong> <br />
-          &quot;Our way is the Best way to enjoy Asian Cuisine Without Sacrificing Taste or Your Health!&quot;
-        </p>
-      </div>
+      {/* CONTENT */}
+      <main className="bg-gradient-to-b from-[#fffdfc] via-white to-[#fff8f5]">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+          <AddBanner />
 
-      {/* ADD BANNER */}
-      {renderAddBanner()}
+          <FoodSection title="Bowls" items={bowls} />
+          <FoodSection title="Plates" items={plates} />
+          <SaladPlateSection options={saladPlateOptions} />
 
-      {/* MENU SECTIONS */}
-      {renderSection("Bowls", bowls)}
-      {renderSection("Plates", plates)}
-      {renderSaladPlateBox()}
-      {renderDrinkBox("Boba Drinks", bobaDrinks, "/boba-drinks.png")}
-      {renderDrinkBox("Smoothies (24 oz.)", smoothies, "/smoothies.png")}
-      {renderDrinkBox("Flavor Green Tea (w/Boba, 24 oz.)", flavorGreenTea, "/flavor-green-tea.png")}
-      {renderSection("Bottle Drinks", bottleDrinks)}
-      {renderSection("Sides", sides)}
-
-      {/* PARTY TRAYS */}
-      <section className="my-12 p-6 rounded-3xl bg-gray-50 shadow-inner relative">
-        <h2 className="text-3xl font-extrabold text-center mb-8 border-b-2 pb-3 border-gray-300">
-          Party Trays
-        </h2>
-
-        <Card className="p-8 bg-white shadow-xl rounded-2xl flex flex-col items-center text-center space-y-6 relative">
-          <div>
-            <p className="text-lg italic text-gray-600 mb-4">
-              Please ask for more details about our Party Trays!
-            </p>
-            <ul className="list-disc list-inside text-gray-700 space-y-1 font-medium">
-              {partyTrays.map((item, idx) => <li key={idx}>{item.name}</li>)}
-            </ul>
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+            <CompactMenuSection title="Sides" items={sides} columns={1} />
+            <CompactMenuSection title="Bottle Drinks" items={bottleDrinks} columns={1} />
           </div>
 
-          <div className="space-y-2">
-            <p className="text-gray-700 font-medium">
-              📞 <span className="font-bold text-red-600">Phone Orders:</span> 909-740-0740
-            </p>
-            <p className="text-gray-700 font-medium">
-              💻 Online Orders: DoorDash / Uber Eats / Grubhub
-            </p>
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+            <CompactMenuSection title="Boba Drinks" items={bobaDrinks} columns={1} />
+            <CompactMenuSection title="Flavor Green Tea" items={flavorGreenTea} columns={1} />
           </div>
 
-          <a href="tel:9097400740"
-            className="mt-4 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded-xl shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-          >
-            Call to Order
-          </a>
+          <CompactMenuSection title="Smoothies" items={smoothies} columns={2} />
 
-          <div className="absolute bottom-2 right-2 w-14 h-14 opacity-20">
-            <Image src="/dragon-grill-logo.png" alt="Logo" fill className="object-contain" />
-          </div>
-        </Card>
-      </section>
+          <PartyTraySection
+            items={partyTrays}
+            onOpenOrder={() => setOrderModalOpen(true)}
+          />
+        </div>
+      </main>
+
+      <OrderModal
+        isOpen={orderModalOpen}
+        onClose={() => setOrderModalOpen(false)}
+      />
     </>
   );
 }
