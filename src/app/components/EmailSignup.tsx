@@ -2,6 +2,11 @@
 
 import { useState } from "react";
 
+type SignupResponse = {
+  success: boolean;
+  message?: string;
+};
+
 export default function EmailSignup() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
@@ -19,7 +24,7 @@ export default function EmailSignup() {
         body: JSON.stringify({ email }),
       });
 
-      const data = await res.json().catch(() => ({
+      const data: SignupResponse = await res.json().catch(() => ({
         success: false,
         message: "Invalid JSON",
       }));
@@ -31,16 +36,18 @@ export default function EmailSignup() {
         setStatus("error");
         setErrorMessage(data.message || "Something went wrong");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus("error");
-      setErrorMessage(err.message || "Something went wrong");
+      setErrorMessage(
+        err instanceof Error ? err.message : "Something went wrong"
+      );
     }
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto bg-gray-50 p-6 rounded-3xl shadow-2xl"
+      className="mx-auto flex max-w-md flex-col items-center justify-center gap-4 rounded-3xl bg-gray-50 p-6 shadow-2xl sm:flex-row"
     >
       <input
         type="email"
@@ -48,22 +55,23 @@ export default function EmailSignup() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
-        className="flex-1 p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-600 transition"
+        className="flex-1 rounded-xl border border-gray-300 p-3 transition focus:outline-none focus:ring-2 focus:ring-red-600"
       />
       <button
         type="submit"
-        className="px-6 py-3 bg-red-600 text-white font-bold rounded-xl shadow hover:bg-red-700 hover:scale-105 transition-all disabled:opacity-50"
+        className="rounded-xl bg-red-600 px-6 py-3 font-bold text-white shadow transition-all hover:scale-105 hover:bg-red-700 disabled:opacity-50"
         disabled={status === "sending"}
       >
         {status === "sending" ? "Sending..." : "Sign Up"}
       </button>
-      <div className="w-full text-center mt-2 sm:mt-0">
-        {status === "success" && <p className="text-green-500 font-semibold">Thanks for signing up!</p>}
-        {status === "error" && <p className="text-red-500 font-semibold">{errorMessage}</p>}
+      <div className="mt-2 w-full text-center sm:mt-0">
+        {status === "success" && (
+          <p className="font-semibold text-green-500">Thanks for signing up!</p>
+        )}
+        {status === "error" && (
+          <p className="font-semibold text-red-500">{errorMessage}</p>
+        )}
       </div>
     </form>
-
-    
   );
-  
 }
